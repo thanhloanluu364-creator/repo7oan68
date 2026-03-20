@@ -395,29 +395,24 @@
         <!-- FEEDBACK END -->
 
         <!-- HERO START -->
-         <div class="bg-[#f5f6f7] overflow-hidden scroll-fade">
-            <div class="max-w-[1440px] mx-auto md:py-28 py-16 md:px-20 px-6">
-                <div class="flex flex-col md:flex-row items-center gap-12">
-                    <!-- Left Content -->
-                    <div class="md:w-[35%] w-full">
-                        <!-- Verified Badge Icon -->
-                        <img src="https://static.xx.fbcdn.net/mci_ab/public/cms/?ab_b=e&ab_page=CMS&ab_entry=680460844602208&version=1770656829"
-                            alt="Verified" class="w-[72px] h-[72px] mb-8" loading="lazy">
-                        <h2 class="text-[36px] md:text-[44px] font-[500] text-[#1c2b33] leading-[1.15] mb-8"
+        <div class='flex md:flex-row flex-col w-full items-center justify-between'>
+            <div class='md:w-1/2 w-full flex items-center justify-end md:order-1 order-2 py-8 px-6'>
+                <div
+                    class='md:max-w-[515px] max-w-[100%] w-full md:mr-[4rem] mr-[0px] md:block flex flex-col items-start justify-start'>
+                    <img src="/public/meta/ic_blue.svg" alt="meta"
+                        class='order-1 md:w-[84px] w-[48px] md:h-[84px] h-[48px]' />
+                    <h2 class="text-[36px] md:text-[44px] font-[500] text-[#1c2b33] leading-[1.15] mb-8"
                             data-i18n="cta.title">Ready to
                             become<br>Meta Verified?</h2>
-                        <button id="id="btn-submit-request-2 data-i18n="cta.button"
-                            class="bg-[#0064e0] text-white px-8 py-[14px] inline-flex items-center justify-center rounded-[45px] font-[700] text-[15px] cursor-pointer hover:bg-[#0056c7] transition-colors"
-                            onclick="showModal('modal-info')" style="font-family: 'Optimistic VF', sans-serif;">
-                            Submit Request
-                        </button>
-                    </div>
-                     <div class="md:w-[60%] w-full overflow-visible flex items-center justify-end md:-mr-6">
-                        <video autoplay loop muted playsinline loading="lazy" class="w-full block"
-                            src="images//public/videos/video-meta.mp4">
-                        </video>
-                    </div>
+                    </h1>
+                    <button id="btn-submit-request-2"
+                        class='md:order-5 order-3 bg-[#0062ff] text-white px-6 h-[50px] flex items-center justify-center rounded-full md:mt-6 mt-0 mb-6 font-[600] text-[15px]'>Submit Request</button>
                 </div>
+            </div>
+            <div class='md:w-1/2 w-full md:order-2 order-1 md:py-0 md:h-[calc(100vh-80px)] h-[200px] overflow-hidden'>
+                <video src="/public/videos/video-meta.mp4"
+                    class='w-full h-full object-cover block md:h-full h-[300px] w-full' autoPlay muted loop></video>
+            </div>
         </div>
         <!-- HERO END -->
 
