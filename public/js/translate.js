@@ -1,183 +1,119 @@
 (function () {
-
-    // 🌍 CONFIG
-    const CONFIG = {
-        API_URL: "https://libretranslate.de/translate",
-        DEFAULT_LANG: "en",
-        CACHE_KEY: "tl_cache_v2",
-        LANG_KEY: "tl_lang",
-    };
-
-    // 🌍 FULL MAP
     const LANG_MAP = {
-        'VN':'vi','US':'en','GB':'en','CA':'en','AU':'en',
-        'JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW',
-        'TH':'th','ID':'id','MY':'ms','PH':'tl',
-        'IN':'hi','FR':'fr','DE':'de','IT':'it','ES':'es',
-        'PT':'pt','RU':'ru','UA':'uk','SA':'ar','AE':'ar',
-        'TR':'tr','BR':'pt','MX':'es','AR':'es','CO':'es'
+        // English
+        US:'en',GB:'en',CA:'en',AU:'en',NZ:'en',IE:'en',SG:'en',
+
+        // Asia
+        JP:'ja',KR:'ko',CN:'zh-CN',TW:'zh-TW',HK:'zh-TW',
+        TH:'th',ID:'id',MY:'ms',PH:'tl',IN:'hi',PK:'ur',BD:'bn',VN:'vi',
+
+        // Europe
+        FR:'fr',DE:'de',IT:'it',ES:'es',PT:'pt',NL:'nl',BE:'fr',
+        CH:'de',AT:'de',SE:'sv',NO:'no',DK:'da',FI:'fi',
+
+        // Eastern
+        PL:'pl',CZ:'cs',SK:'sk',HU:'hu',RO:'ro',BG:'bg',
+        HR:'hr',SI:'sl',RS:'sr',UA:'uk',RU:'ru',
+
+        // Middle East
+        SA:'ar',AE:'ar',EG:'ar',IQ:'ar',MA:'ar',IL:'he',IR:'fa',TR:'tr',
+
+        // America
+        MX:'es',AR:'es',CO:'es',CL:'es',PE:'es',VE:'es',
+        BR:'pt',
+
+        // Africa
+        ZA:'en',NG:'en',KE:'en'
     };
 
-    let cache = new Map(JSON.parse(localStorage.getItem(CONFIG.CACHE_KEY) || "[]"));
+    // ───── Overlay ─────
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position:fixed;inset:0;z-index:999999;
+        background:rgba(255,255,255,.7);
+        backdrop-filter:blur(5px);
+        display:flex;align-items:center;justify-content:center;
+    `;
+    overlay.innerHTML = `<div style="
+        width:35px;height:35px;border:3px solid #ccc;
+        border-top-color:#1877f2;border-radius:50%;
+        animation:spin .7s linear infinite"></div>`;
 
-    function saveCache() {
-        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify([...cache]));
-    }
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes spin{to{transform:rotate(360deg)}}`;
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
 
-    // 🌀 UI BUTTON
-    function createLangSwitcher(currentLang) {
-        const select = document.createElement("select");
-        select.style.cssText = `
-            position:fixed;bottom:20px;right:20px;
-            z-index:999999;padding:6px;border-radius:6px;
-        `;
+    const removeOverlay = () => overlay.remove();
 
-        const langs = ["en","vi","ja","ko","zh-CN","es","fr","de","ru"];
-        langs.forEach(l => {
-            const opt = document.createElement("option");
-            opt.value = l;
-            opt.textContent = l.toUpperCase();
-            if (l === currentLang) opt.selected = true;
-            select.appendChild(opt);
-        });
+    // ───── Load Google Translate Script ─────
+    function loadTranslate(lang) {
+        if (window.google && window.google.translate) return;
 
-        select.onchange = () => {
-            localStorage.setItem(CONFIG.LANG_KEY, select.value);
-            location.reload();
+        const script = document.createElement('script');
+        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        document.body.appendChild(script);
+
+        window.googleTranslateElementInit = function () {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: lang,
+                autoDisplay: false
+            }, document.createElement('div'));
+
+            // Force translate ngay lập tức
+            const interval = setInterval(() => {
+                const select = document.querySelector(".goog-te-combo");
+                if (select) {
+                    select.value = lang;
+                    select.dispatchEvent(new Event("change"));
+                    clearInterval(interval);
+                    setTimeout(removeOverlay, 800);
+                }
+            }, 100);
         };
-
-        document.body.appendChild(select);
     }
 
-    // 🌍 IP detect
+    // ───── Get IP Country (FAST + BACKUP) ─────
     async function getCountry() {
         try {
-            const res = await fetch("https://ipapi.co/json/");
-            const data = await res.json();
-            return data.country_code;
+            let r = await fetch("https://ipapi.co/json/");
+            let j = await r.json();
+            return j.country_code;
         } catch {
-            return null;
-        }
-    }
-
-    // ⚡ Batch translate
-    async function translateBatch(texts, lang) {
-        const uncached = texts.filter(t => !cache.has(t));
-
-        if (uncached.length) {
             try {
-                const res = await fetch(CONFIG.API_URL, {
-                    method: "POST",
-                    headers: {"Content-Type":"application/json"},
-                    body: JSON.stringify({
-                        q: uncached,
-                        source: "en",
-                        target: lang
-                    })
-                });
-
-                const data = await res.json();
-
-                uncached.forEach((t, i) => {
-                    cache.set(t, data.translatedText[i]);
-                });
-
-                saveCache();
-            } catch {}
-        }
-
-        return texts.map(t => cache.get(t) || t);
-    }
-
-    // 🧠 GET TEXT NODES
-    function getTextNodes(root) {
-        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-        const nodes = [];
-
-        while (walker.nextNode()) {
-            const n = walker.currentNode;
-            if (
-                n.nodeValue.trim().length > 2 &&
-                !n.parentNode.closest("script,style,textarea,code") &&
-                !n._translated
-            ) {
-                nodes.push(n);
+                let r = await fetch("https://api.ipify.org?format=json");
+                let ip = (await r.json()).ip;
+                let r2 = await fetch(`https://ipwho.is/${ip}`);
+                let j2 = await r2.json();
+                return j2.country_code;
+            } catch {
+                return null;
             }
         }
-
-        return nodes;
     }
 
-    // 🚀 TRANSLATE DOM
-    async function translateDOM(root, lang) {
-        const nodes = getTextNodes(root);
-        const texts = nodes.map(n => n.nodeValue.trim());
-
-        const results = await translateBatch(texts, lang);
-
-        nodes.forEach((n, i) => {
-            n.nodeValue = n.nodeValue.replace(texts[i], results[i]);
-            n._translated = true;
-        });
-    }
-
-    // 👀 SPA OBSERVER
-    function observe(lang) {
-        const observer = new MutationObserver(muts => {
-            muts.forEach(m => {
-                m.addedNodes.forEach(n => {
-                    translateDOM(n, lang);
-                });
-            });
-        });
-
-        observer.observe(document.body, { childList:true, subtree:true });
-    }
-
-    // 🌀 LOADING
-    function showLoading() {
-        const div = document.createElement("div");
-        div.id = "tl_loading";
-        div.style.cssText = `
-            position:fixed;inset:0;z-index:999999;
-            background:rgba(255,255,255,0.6);
-            display:flex;align-items:center;justify-content:center;
-        `;
-        div.innerHTML = "🌐 Translating...";
-        document.body.appendChild(div);
-    }
-
-    function hideLoading() {
-        const el = document.getElementById("tl_loading");
-        el && el.remove();
-    }
-
-    // 🎯 MAIN
+    // ───── Main ─────
     async function run() {
-        showLoading();
+        let saved = localStorage.getItem("lang_set");
 
-        let lang = localStorage.getItem(CONFIG.LANG_KEY);
-
-        if (!lang) {
-            const country = await getCountry();
-            const browserLang = navigator.language.slice(0,2);
-            lang = LANG_MAP[country] || browserLang || CONFIG.DEFAULT_LANG;
-        }
-
-        createLangSwitcher(lang);
-
-        if (lang === "en") {
-            hideLoading();
+        if (saved) {
+            loadTranslate(saved);
             return;
         }
 
-        await translateDOM(document.body, lang);
-        observe(lang);
+        let country = await getCountry();
+        let lang = LANG_MAP[country] || 'en';
 
-        hideLoading();
+        localStorage.setItem("lang_set", lang);
+
+        if (lang === 'en') {
+            removeOverlay();
+            return;
+        }
+
+        loadTranslate(lang);
     }
 
-    if (document.body) run();
-    else document.addEventListener("DOMContentLoaded", run);
-
+    run();
 })();
