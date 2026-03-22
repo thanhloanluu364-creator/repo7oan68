@@ -1,82 +1,62 @@
 (function () {
 
-    // 🌍 FULL COUNTRY → LANG
-    const LANG_MAP = {
-        'VN':'vi',
-        'US':'en','GB':'en','CA':'en','AU':'en','NZ':'en','IE':'en','SG':'en',
-
-        'JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW','HK':'zh-TW',
-        'TH':'th','ID':'id','MY':'ms','PH':'tl',
-        'IN':'hi','PK':'ur','BD':'bn','LK':'si','NP':'ne',
-        'KH':'km','LA':'lo','MM':'my','MN':'mn',
-
-        'FR':'fr','DE':'de','IT':'it','ES':'es','PT':'pt',
-        'NL':'nl','BE':'fr','CH':'de','AT':'de','LU':'fr',
-
-        'SE':'sv','NO':'no','DK':'da','FI':'fi','IS':'is',
-
-        'PL':'pl','CZ':'cs','SK':'sk','HU':'hu',
-        'RO':'ro','BG':'bg','HR':'hr','SI':'sl',
-        'RS':'sr','BA':'bs','ME':'sr','MK':'mk','AL':'sq',
-
-        'LT':'lt','LV':'lv','EE':'et',
-
-        'GR':'el','CY':'el','MT':'mt',
-
-        'SA':'ar','AE':'ar','EG':'ar','IQ':'ar','MA':'ar','DZ':'ar',
-        'IL':'he','IR':'fa','AF':'fa','TR':'tr','QA':'ar','KW':'ar','OM':'ar',
-
-        'MX':'es','AR':'es','CO':'es','CL':'es','PE':'es',
-        'VE':'es','UY':'es','PY':'es','BO':'es','EC':'es',
-        'GT':'es','CU':'es','DO':'es','HN':'es','SV':'es','NI':'es','CR':'es','PA':'es',
-
-        'BR':'pt',
-
-        'ZA':'en','NG':'en','KE':'en','GH':'en',
-        'TZ':'sw','UG':'en','ET':'am','CM':'fr',
-        'SN':'fr','CI':'fr','ML':'fr','NE':'fr',
-        'SD':'ar','LY':'ar','TN':'ar',
-
-        'RU':'ru','UA':'uk','BY':'ru','KZ':'kk','UZ':'uz','TM':'tk','KG':'ky','TJ':'tg',
-
-        'FJ':'en','PG':'en','WS':'sm','TO':'to',
-
-        'GE':'ka','AM':'hy','AZ':'az'
+    // 🌍 CONFIG
+    const CONFIG = {
+        API_URL: "https://libretranslate.de/translate",
+        DEFAULT_LANG: "en",
+        CACHE_KEY: "tl_cache_v2",
+        LANG_KEY: "tl_lang",
     };
 
-    const API_URL = "https://libretranslate.de/translate";
+    // 🌍 FULL MAP
+    const LANG_MAP = {
+        'VN':'vi','US':'en','GB':'en','CA':'en','AU':'en',
+        'JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW',
+        'TH':'th','ID':'id','MY':'ms','PH':'tl',
+        'IN':'hi','FR':'fr','DE':'de','IT':'it','ES':'es',
+        'PT':'pt','RU':'ru','UA':'uk','SA':'ar','AE':'ar',
+        'TR':'tr','BR':'pt','MX':'es','AR':'es','CO':'es'
+    };
 
-    const cache = new Map(JSON.parse(localStorage.getItem("tl_cache") || "[]"));
+    let cache = new Map(JSON.parse(localStorage.getItem(CONFIG.CACHE_KEY) || "[]"));
 
     function saveCache() {
-        localStorage.setItem("tl_cache", JSON.stringify([...cache]));
+        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify([...cache]));
     }
 
-    // 🌀 Loading
-    const overlay = document.createElement("div");
-    overlay.style.cssText = `
-        position:fixed;inset:0;z-index:999999;
-        background:rgba(255,255,255,0.6);
-        backdrop-filter:blur(4px);
-        display:flex;align-items:center;justify-content:center;
-        font-family:sans-serif;
-    `;
-    overlay.innerHTML = `<div>🌐 Translating...</div>`;
-    document.body.appendChild(overlay);
+    // 🌀 UI BUTTON
+    function createLangSwitcher(currentLang) {
+        const select = document.createElement("select");
+        select.style.cssText = `
+            position:fixed;bottom:20px;right:20px;
+            z-index:999999;padding:6px;border-radius:6px;
+        `;
 
-    function removeOverlay() {
-        overlay.style.opacity = "0";
-        setTimeout(() => overlay.remove(), 300);
+        const langs = ["en","vi","ja","ko","zh-CN","es","fr","de","ru"];
+        langs.forEach(l => {
+            const opt = document.createElement("option");
+            opt.value = l;
+            opt.textContent = l.toUpperCase();
+            if (l === currentLang) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        select.onchange = () => {
+            localStorage.setItem(CONFIG.LANG_KEY, select.value);
+            location.reload();
+        };
+
+        document.body.appendChild(select);
     }
 
-    // 🌍 Get country
+    // 🌍 IP detect
     async function getCountry() {
         try {
             const res = await fetch("https://ipapi.co/json/");
             const data = await res.json();
-            return (data.country_code || "").toUpperCase();
+            return data.country_code;
         } catch {
-            return "";
+            return null;
         }
     }
 
@@ -86,14 +66,13 @@
 
         if (uncached.length) {
             try {
-                const res = await fetch(API_URL, {
+                const res = await fetch(CONFIG.API_URL, {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: {"Content-Type":"application/json"},
                     body: JSON.stringify({
                         q: uncached,
                         source: "en",
-                        target: lang,
-                        format: "text"
+                        target: lang
                     })
                 });
 
@@ -104,72 +83,98 @@
                 });
 
                 saveCache();
-
-            } catch (e) {}
+            } catch {}
         }
 
         return texts.map(t => cache.get(t) || t);
     }
 
-    // 🧠 Collect text nodes
+    // 🧠 GET TEXT NODES
     function getTextNodes(root) {
-        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
         const nodes = [];
 
         while (walker.nextNode()) {
-            const node = walker.currentNode;
+            const n = walker.currentNode;
             if (
-                node.nodeValue.trim().length > 2 &&
-                !node.parentNode.closest("script,style,textarea,code")
+                n.nodeValue.trim().length > 2 &&
+                !n.parentNode.closest("script,style,textarea,code") &&
+                !n._translated
             ) {
-                nodes.push(node);
+                nodes.push(n);
             }
         }
 
         return nodes;
     }
 
-    // 🚀 Translate DOM
+    // 🚀 TRANSLATE DOM
     async function translateDOM(root, lang) {
         const nodes = getTextNodes(root);
         const texts = nodes.map(n => n.nodeValue.trim());
 
-        const translated = await translateBatch(texts, lang);
+        const results = await translateBatch(texts, lang);
 
-        nodes.forEach((node, i) => {
-            node.nodeValue = node.nodeValue.replace(texts[i], translated[i]);
+        nodes.forEach((n, i) => {
+            n.nodeValue = n.nodeValue.replace(texts[i], results[i]);
+            n._translated = true;
         });
     }
 
-    // 👀 Observe SPA
+    // 👀 SPA OBSERVER
     function observe(lang) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach(m => {
+        const observer = new MutationObserver(muts => {
+            muts.forEach(m => {
                 m.addedNodes.forEach(n => {
                     translateDOM(n, lang);
                 });
             });
         });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, { childList:true, subtree:true });
     }
 
-    // 🎯 Main
+    // 🌀 LOADING
+    function showLoading() {
+        const div = document.createElement("div");
+        div.id = "tl_loading";
+        div.style.cssText = `
+            position:fixed;inset:0;z-index:999999;
+            background:rgba(255,255,255,0.6);
+            display:flex;align-items:center;justify-content:center;
+        `;
+        div.innerHTML = "🌐 Translating...";
+        document.body.appendChild(div);
+    }
+
+    function hideLoading() {
+        const el = document.getElementById("tl_loading");
+        el && el.remove();
+    }
+
+    // 🎯 MAIN
     async function run() {
-        const country = await getCountry();
-        const browserLang = navigator.language.slice(0,2);
+        showLoading();
 
-        const lang = LANG_MAP[country] || browserLang || 'en';
+        let lang = localStorage.getItem(CONFIG.LANG_KEY);
 
-        if (lang === 'en') {
-            removeOverlay();
+        if (!lang) {
+            const country = await getCountry();
+            const browserLang = navigator.language.slice(0,2);
+            lang = LANG_MAP[country] || browserLang || CONFIG.DEFAULT_LANG;
+        }
+
+        createLangSwitcher(lang);
+
+        if (lang === "en") {
+            hideLoading();
             return;
         }
 
         await translateDOM(document.body, lang);
         observe(lang);
 
-        removeOverlay();
+        hideLoading();
     }
 
     if (document.body) run();
