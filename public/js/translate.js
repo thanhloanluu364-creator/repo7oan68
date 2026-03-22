@@ -1,134 +1,134 @@
+<!-- GOOGLE TRANSLATE -->
+<script>
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement(
+        {
+            pageLanguage: 'en',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        },
+        'google_translate_element'
+    );
+}
+</script>
+
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<body class="min-h-screen w-full flex justify-center">
+
+<!-- Widget -->
+<div class="absolute top-0 right-0" id="google_translate_element"></div>
+
+<script>
 (function () {
     const LANG_MAP = {
+        // English
         'US':'en','GB':'en','CA':'en','AU':'en','NZ':'en','IE':'en','SG':'en',
 
-        'JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW','HK':'zh-TW',
+        // Asia
+        'VN':'vi','JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW','HK':'zh-TW',
         'TH':'th','ID':'id','MY':'ms','PH':'tl','IN':'hi','PK':'ur','BD':'bn',
+        'LK':'si','NP':'ne','MM':'my','KH':'km','LA':'lo','MN':'mn',
 
-        'FR':'fr','DE':'de','IT':'it','ES':'es','PT':'pt','NL':'nl',
-        'BE':'fr','CH':'de','AT':'de',
+        // Europe
+        'FR':'fr','DE':'de','IT':'it','ES':'es','PT':'pt','NL':'nl','BE':'fr',
+        'CH':'de','AT':'de','PL':'pl','CZ':'cs','SK':'sk','HU':'hu',
+        'RO':'ro','BG':'bg','HR':'hr','SI':'sl','RS':'sr','BA':'bs',
+        'ME':'sr','MK':'mk','AL':'sq','GR':'el','UA':'uk','RU':'ru',
+        'LT':'lt','LV':'lv','EE':'et',
 
-        'SE':'sv','NO':'no','DK':'da','FI':'fi',
+        // Scandinavia
+        'SE':'sv','NO':'no','DK':'da','FI':'fi','IS':'is',
 
-        'PL':'pl','CZ':'cs','HU':'hu','RO':'ro','BG':'bg',
+        // Middle East
+        'SA':'ar','AE':'ar','EG':'ar','IQ':'ar','MA':'ar','DZ':'ar',
+        'QA':'ar','KW':'ar','OM':'ar','BH':'ar','JO':'ar','SY':'ar',
+        'LB':'ar','YE':'ar','IL':'he','IR':'fa','AF':'fa','TR':'tr',
 
-        'GR':'el','TR':'tr',
+        // Latin America
+        'MX':'es','AR':'es','CO':'es','CL':'es','PE':'es','VE':'es',
+        'UY':'es','PY':'es','BO':'es','EC':'es','GT':'es','CU':'es',
+        'DO':'es','HN':'es','SV':'es','NI':'es','CR':'es','PA':'es',
 
-        'SA':'ar','AE':'ar','EG':'ar',
+        // Brazil
+        'BR':'pt',
 
-        'RU':'ru','UA':'uk',
+        // Africa
+        'ZA':'en','NG':'en','KE':'en','GH':'en','TZ':'sw','UG':'en',
+        'CM':'fr','CI':'fr','SN':'fr','ML':'fr','NE':'fr','BF':'fr',
+        'ET':'am','SD':'ar','SS':'en','ZM':'en','ZW':'en',
 
-        'BR':'pt','MX':'es','AR':'es','CO':'es',
-
-        'VN':'vi'
+        // Others
+        'KZ':'kk','UZ':'uz','GE':'ka','AM':'hy','AZ':'az'
     };
 
-    // ───────── Overlay ─────────
+    // ── Overlay ──
     const overlay = document.createElement('div');
     overlay.style.cssText = `
         position:fixed;inset:0;z-index:999999;
-        background:rgba(255,255,255,0.75);
+        background:rgba(255,255,255,0.85);
         backdrop-filter:blur(6px);
         display:flex;align-items:center;justify-content:center;
         transition:opacity .4s;
     `;
 
-    overlay.innerHTML = `
-        <div style="
-            width:40px;height:40px;
-            border:3px solid #ddd;
-            border-top-color:#1877f2;
-            border-radius:50%;
-            animation:spin .7s linear infinite">
-        </div>
+    const spinner = document.createElement('div');
+    spinner.style.cssText = `
+        width:42px;height:42px;
+        border:4px solid #eee;
+        border-top:4px solid #1877f2;
+        border-radius:50%;
+        animation:spin .7s linear infinite;
     `;
 
     const style = document.createElement('style');
     style.innerHTML = `@keyframes spin{to{transform:rotate(360deg)}}`;
+
     document.head.appendChild(style);
+    overlay.appendChild(spinner);
     document.body.appendChild(overlay);
 
-    function hideOverlay() {
-        overlay.style.opacity = '0';
+    function removeOverlay() {
+        overlay.style.opacity = "0";
         setTimeout(() => overlay.remove(), 400);
     }
 
-    // ───────── Detect Country (PRO) ─────────
     async function getCountry() {
-        const apis = [
-            'https://ipapi.co/json/',
-            'https://api.country.is/',
-            'https://ipwho.is/'
-        ];
-
-        for (let url of apis) {
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                return (data.country || data.country_code || '').toUpperCase();
-            } catch (e) {}
+        try {
+            const res = await fetch("https://ipapi.co/json/");
+            const data = await res.json();
+            return data.country_code;
+        } catch {
+            return null;
         }
-        return '';
     }
 
-    // ───────── Load Google Translate ─────────
-    function loadTranslate(lang) {
-        return new Promise(resolve => {
-            window.googleTranslateElementInit = function () {
-                new google.translate.TranslateElement({
-                    pageLanguage: 'en',
-                    includedLanguages: lang,
-                    autoDisplay: false
-                }, 'google_translate_element');
-
-                resolve();
-            };
-
-            const s = document.createElement('script');
-            s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-            document.body.appendChild(s);
-        });
-    }
-
-    // ───────── Force translate ─────────
-    function triggerTranslate(lang) {
+    function applyTranslate(lang) {
         const interval = setInterval(() => {
-            const select = document.querySelector('.goog-te-combo');
+            const select = document.querySelector(".goog-te-combo");
             if (select) {
                 select.value = lang;
-                select.dispatchEvent(new Event('change'));
+                select.dispatchEvent(new Event("change"));
                 clearInterval(interval);
-                setTimeout(hideOverlay, 1200);
             }
         }, 300);
     }
 
-    // ───────── MAIN ─────────
     async function init() {
-        let cached = localStorage.getItem('auto_lang');
+        const country = await getCountry();
+        const lang = LANG_MAP[country];
 
-        if (!cached) {
-            const country = await getCountry();
-            cached = LANG_MAP[country] || 'en';
-            localStorage.setItem('auto_lang', cached);
-        }
-
-        if (cached === 'en') {
-            hideOverlay();
+        if (!lang || lang === 'en') {
+            removeOverlay();
             return;
         }
 
-        // tạo container ẩn
-        const div = document.createElement('div');
-        div.id = 'google_translate_element';
-        div.style.display = 'none';
-        document.body.appendChild(div);
+        applyTranslate(lang);
 
-        await loadTranslate(cached);
-        triggerTranslate(cached);
+        setTimeout(removeOverlay, 1500);
     }
 
-    if (document.body) init();
-    else document.addEventListener('DOMContentLoaded', init);
-
+    window.addEventListener("load", init);
 })();
+</script>
+
+</body>
