@@ -1,134 +1,215 @@
-<!-- GOOGLE TRANSLATE -->
-<script>
-function googleTranslateElementInit() {
-    new google.translate.TranslateElement(
-        {
-            pageLanguage: 'en',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-        },
-        'google_translate_element'
-    );
-}
-</script>
-
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-<body class="min-h-screen w-full flex justify-center">
-
-<!-- Widget -->
-<div class="absolute top-0 right-0" id="google_translate_element"></div>
-
-<script>
 (function () {
     const LANG_MAP = {
         // English
-        'US':'en','GB':'en','CA':'en','AU':'en','NZ':'en','IE':'en','SG':'en',
+        'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en', 'NZ': 'en', 'IE': 'en', 'SG': 'en',
 
         // Asia
-        'VN':'vi','JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW','HK':'zh-TW',
-        'TH':'th','ID':'id','MY':'ms','PH':'tl','IN':'hi','PK':'ur','BD':'bn',
-        'LK':'si','NP':'ne','MM':'my','KH':'km','LA':'lo','MN':'mn',
+        'JP': 'ja',
+        'KR': 'ko',
+        'CN': 'zh-CN',
+        'TW': 'zh-TW',
+        'HK': 'zh-TW',
+        'TH': 'th',
+        'ID': 'id',
+        'MY': 'ms',
+        'PH': 'tl',
+        'IN': 'hi',
+        'PK': 'ur',
+        'BD': 'bn',
 
-        // Europe
-        'FR':'fr','DE':'de','IT':'it','ES':'es','PT':'pt','NL':'nl','BE':'fr',
-        'CH':'de','AT':'de','PL':'pl','CZ':'cs','SK':'sk','HU':'hu',
-        'RO':'ro','BG':'bg','HR':'hr','SI':'sl','RS':'sr','BA':'bs',
-        'ME':'sr','MK':'mk','AL':'sq','GR':'el','UA':'uk','RU':'ru',
-        'LT':'lt','LV':'lv','EE':'et',
+        // Europe major
+        'FR': 'fr',
+        'DE': 'de',
+        'IT': 'it',
+        'ES': 'es',
+        'PT': 'pt',
+        'NL': 'nl',
+        'BE': 'fr',
+        'CH': 'de',
+        'AT': 'de',
 
         // Scandinavia
-        'SE':'sv','NO':'no','DK':'da','FI':'fi','IS':'is',
+        'SE': 'sv',
+        'NO': 'no',
+        'DK': 'da',
+        'FI': 'fi',
+        'IS': 'is',
+
+        // Eastern Europe
+        'PL': 'pl',
+        'CZ': 'cs',
+        'SK': 'sk',
+        'HU': 'hu',
+        'RO': 'ro',
+        'BG': 'bg',
+        'HR': 'hr',
+        'SI': 'sl',
+        'RS': 'sr',
+        'BA': 'bs',
+        'ME': 'sr',
+        'MK': 'mk',
+
+        // Baltic
+        'LT': 'lt',
+        'LV': 'lv',
+        'EE': 'et',
+
+        // Southern Europe
+        'GR': 'el',
+        'AL': 'sq',
 
         // Middle East
-        'SA':'ar','AE':'ar','EG':'ar','IQ':'ar','MA':'ar','DZ':'ar',
-        'QA':'ar','KW':'ar','OM':'ar','BH':'ar','JO':'ar','SY':'ar',
-        'LB':'ar','YE':'ar','IL':'he','IR':'fa','AF':'fa','TR':'tr',
+        'SA': 'ar',
+        'AE': 'ar',
+        'EG': 'ar',
+        'IQ': 'ar',
+        'MA': 'ar',
+        'IL': 'he',
+        'IR': 'fa',
+        'AF': 'fa',
+        'TR': 'tr',
 
         // Latin America
-        'MX':'es','AR':'es','CO':'es','CL':'es','PE':'es','VE':'es',
-        'UY':'es','PY':'es','BO':'es','EC':'es','GT':'es','CU':'es',
-        'DO':'es','HN':'es','SV':'es','NI':'es','CR':'es','PA':'es',
+        'MX': 'es',
+        'AR': 'es',
+        'CO': 'es',
+        'CL': 'es',
+        'PE': 'es',
+        'VE': 'es',
+        'UY': 'es',
+        'PY': 'es',
+        'BO': 'es',
+        'EC': 'es',
 
         // Brazil
-        'BR':'pt',
+        'BR': 'pt',
 
-        // Africa
-        'ZA':'en','NG':'en','KE':'en','GH':'en','TZ':'sw','UG':'en',
-        'CM':'fr','CI':'fr','SN':'fr','ML':'fr','NE':'fr','BF':'fr',
-        'ET':'am','SD':'ar','SS':'en','ZM':'en','ZW':'en',
+        // Africa (major)
+        'ZA': 'en',
+        'NG': 'en',
+        'KE': 'en',
 
-        // Others
-        'KZ':'kk','UZ':'uz','GE':'ka','AM':'hy','AZ':'az'
+        // Ukraine / Russia
+        'UA': 'uk',
+        'RU': 'ru',
     };
 
-    // ── Overlay ──
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position:fixed;inset:0;z-index:999999;
-        background:rgba(255,255,255,0.85);
-        backdrop-filter:blur(6px);
-        display:flex;align-items:center;justify-content:center;
-        transition:opacity .4s;
-    `;
+    // ── Overlay ──────────────────────────────────────────────────────────
+    var overlay = document.createElement('div');
+    overlay.id = 'translate-overlay';
+    overlay.style.cssText = [
+        'position:fixed', 'inset:0', 'z-index:999999',
+        'background:rgba(255,255,255,0.82)',
+        'backdrop-filter:blur(6px)',
+        '-webkit-backdrop-filter:blur(6px)',
+        'display:flex', 'align-items:center', 'justify-content:center',
+        'transition:opacity 0.4s ease',
+        'opacity:1',
+    ].join(';');
 
-    const spinner = document.createElement('div');
-    spinner.style.cssText = `
-        width:42px;height:42px;
-        border:4px solid #eee;
-        border-top:4px solid #1877f2;
-        border-radius:50%;
-        animation:spin .7s linear infinite;
-    `;
+    var spinner = document.createElement('div');
+    spinner.style.cssText = [
+        'width:36px', 'height:36px',
+        'border:3px solid #e0e0e0',
+        'border-top-color:#1877f2',
+        'border-radius:50%',
+        'animation:_tl_spin 0.7s linear infinite',
+    ].join(';');
 
-    const style = document.createElement('style');
-    style.innerHTML = `@keyframes spin{to{transform:rotate(360deg)}}`;
+    var style = document.createElement('style');
+    style.textContent = '@keyframes _tl_spin{to{transform:rotate(360deg)}}';
 
     document.head.appendChild(style);
     overlay.appendChild(spinner);
     document.body.appendChild(overlay);
 
     function removeOverlay() {
-        overlay.style.opacity = "0";
-        setTimeout(() => overlay.remove(), 400);
+        overlay.style.opacity = '0';
+        setTimeout(function () {
+            overlay.parentNode && overlay.parentNode.removeChild(overlay);
+        }, 420);
     }
 
-    async function getCountry() {
-        try {
-            const res = await fetch("https://ipapi.co/json/");
-            const data = await res.json();
-            return data.country_code;
-        } catch {
-            return null;
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function getGoogtransCookie() {
+        var m = document.cookie.match(/(?:^|;\s*)googtrans=([^;]*)/);
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    function setGoogtransCookie(lang) {
+        var value = '/en/' + lang;
+        var hostname = location.hostname;
+        document.cookie = 'googtrans=' + value + '; path=/';
+        if (hostname && hostname !== 'localhost') {
+            document.cookie = 'googtrans=' + value + '; path=/; domain=' + hostname;
         }
     }
 
-    function applyTranslate(lang) {
-        const interval = setInterval(() => {
-            const select = document.querySelector(".goog-te-combo");
-            if (select) {
-                select.value = lang;
-                select.dispatchEvent(new Event("change"));
-                clearInterval(interval);
+    async function getCountryCode() {
+        try {
+            var res = await fetch('https://apip.cc/json');
+            var data = await res.json();
+            return (data.CountryCode || '').toUpperCase();
+        } catch (e) {
+            try {
+                var res2 = await fetch('https://ipapi.co/json/');
+                var data2 = await res2.json();
+                return (data2.country_code || '').toUpperCase();
+            } catch (e2) {
+                return '';
             }
-        }, 300);
+        }
     }
 
-    async function init() {
-        const country = await getCountry();
-        const lang = LANG_MAP[country];
+    // ── Wait for Google Translate to finish ────────────────────────────
+    function waitForTranslation(timeout) {
+        return new Promise(function (resolve) {
+            // Google Translate adds class "translated-ltr" / "translated-rtl" to <html>
+            var html = document.documentElement;
+            if (/translated-(ltr|rtl)/.test(html.className)) {
+                return resolve();
+            }
+            var timer = setTimeout(resolve, timeout || 5000);
+            var obs = new MutationObserver(function () {
+                if (/translated-(ltr|rtl)/.test(html.className)) {
+                    clearTimeout(timer);
+                    obs.disconnect();
+                    resolve();
+                }
+            });
+            obs.observe(html, { attributes: true, attributeFilter: ['class'] });
+        });
+    }
 
-        if (!lang || lang === 'en') {
+    // ── Main ──────────────────────────────────────────────────────────────
+    async function run() {
+        var existing = getGoogtransCookie();
+
+        // Cookie already set to a non-English language → wait for translation then hide overlay
+        if (existing && existing !== '/en/en' && existing !== '/en/' && existing !== '/en/undefined') {
+            await waitForTranslation(6000);
             removeOverlay();
             return;
         }
 
-        applyTranslate(lang);
+        // First visit: detect country and set cookie
+        var countryCode = await getCountryCode();
+        var targetLang = countryCode ? LANG_MAP[countryCode] : null;
 
-        setTimeout(removeOverlay, 1500);
+        if (!targetLang) {
+            // English-speaking or unknown country → no translation needed
+            removeOverlay();
+            return;
+        }
+
+        setGoogtransCookie(targetLang);
+        location.reload();
     }
 
-    window.addEventListener("load", init);
+    // Run after body is ready
+    if (document.body) {
+        run();
+    } else {
+        document.addEventListener('DOMContentLoaded', run);
+    }
 })();
-</script>
-
-</body>
