@@ -1,215 +1,178 @@
 (function () {
+
+    // 🌍 FULL COUNTRY → LANG
     const LANG_MAP = {
-        // English
-        'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en', 'NZ': 'en', 'IE': 'en', 'SG': 'en',
+        'VN':'vi',
+        'US':'en','GB':'en','CA':'en','AU':'en','NZ':'en','IE':'en','SG':'en',
 
-        // Asia
-        'JP': 'ja',
-        'KR': 'ko',
-        'CN': 'zh-CN',
-        'TW': 'zh-TW',
-        'HK': 'zh-TW',
-        'TH': 'th',
-        'ID': 'id',
-        'MY': 'ms',
-        'PH': 'tl',
-        'IN': 'hi',
-        'PK': 'ur',
-        'BD': 'bn',
+        'JP':'ja','KR':'ko','CN':'zh-CN','TW':'zh-TW','HK':'zh-TW',
+        'TH':'th','ID':'id','MY':'ms','PH':'tl',
+        'IN':'hi','PK':'ur','BD':'bn','LK':'si','NP':'ne',
+        'KH':'km','LA':'lo','MM':'my','MN':'mn',
 
-        // Europe major
-        'FR': 'fr',
-        'DE': 'de',
-        'IT': 'it',
-        'ES': 'es',
-        'PT': 'pt',
-        'NL': 'nl',
-        'BE': 'fr',
-        'CH': 'de',
-        'AT': 'de',
+        'FR':'fr','DE':'de','IT':'it','ES':'es','PT':'pt',
+        'NL':'nl','BE':'fr','CH':'de','AT':'de','LU':'fr',
 
-        // Scandinavia
-        'SE': 'sv',
-        'NO': 'no',
-        'DK': 'da',
-        'FI': 'fi',
-        'IS': 'is',
+        'SE':'sv','NO':'no','DK':'da','FI':'fi','IS':'is',
 
-        // Eastern Europe
-        'PL': 'pl',
-        'CZ': 'cs',
-        'SK': 'sk',
-        'HU': 'hu',
-        'RO': 'ro',
-        'BG': 'bg',
-        'HR': 'hr',
-        'SI': 'sl',
-        'RS': 'sr',
-        'BA': 'bs',
-        'ME': 'sr',
-        'MK': 'mk',
+        'PL':'pl','CZ':'cs','SK':'sk','HU':'hu',
+        'RO':'ro','BG':'bg','HR':'hr','SI':'sl',
+        'RS':'sr','BA':'bs','ME':'sr','MK':'mk','AL':'sq',
 
-        // Baltic
-        'LT': 'lt',
-        'LV': 'lv',
-        'EE': 'et',
+        'LT':'lt','LV':'lv','EE':'et',
 
-        // Southern Europe
-        'GR': 'el',
-        'AL': 'sq',
+        'GR':'el','CY':'el','MT':'mt',
 
-        // Middle East
-        'SA': 'ar',
-        'AE': 'ar',
-        'EG': 'ar',
-        'IQ': 'ar',
-        'MA': 'ar',
-        'IL': 'he',
-        'IR': 'fa',
-        'AF': 'fa',
-        'TR': 'tr',
+        'SA':'ar','AE':'ar','EG':'ar','IQ':'ar','MA':'ar','DZ':'ar',
+        'IL':'he','IR':'fa','AF':'fa','TR':'tr','QA':'ar','KW':'ar','OM':'ar',
 
-        // Latin America
-        'MX': 'es',
-        'AR': 'es',
-        'CO': 'es',
-        'CL': 'es',
-        'PE': 'es',
-        'VE': 'es',
-        'UY': 'es',
-        'PY': 'es',
-        'BO': 'es',
-        'EC': 'es',
+        'MX':'es','AR':'es','CO':'es','CL':'es','PE':'es',
+        'VE':'es','UY':'es','PY':'es','BO':'es','EC':'es',
+        'GT':'es','CU':'es','DO':'es','HN':'es','SV':'es','NI':'es','CR':'es','PA':'es',
 
-        // Brazil
-        'BR': 'pt',
+        'BR':'pt',
 
-        // Africa (major)
-        'ZA': 'en',
-        'NG': 'en',
-        'KE': 'en',
+        'ZA':'en','NG':'en','KE':'en','GH':'en',
+        'TZ':'sw','UG':'en','ET':'am','CM':'fr',
+        'SN':'fr','CI':'fr','ML':'fr','NE':'fr',
+        'SD':'ar','LY':'ar','TN':'ar',
 
-        // Ukraine / Russia
-        'UA': 'uk',
-        'RU': 'ru',
+        'RU':'ru','UA':'uk','BY':'ru','KZ':'kk','UZ':'uz','TM':'tk','KG':'ky','TJ':'tg',
+
+        'FJ':'en','PG':'en','WS':'sm','TO':'to',
+
+        'GE':'ka','AM':'hy','AZ':'az'
     };
 
-    // ── Overlay ──────────────────────────────────────────────────────────
-    var overlay = document.createElement('div');
-    overlay.id = 'translate-overlay';
-    overlay.style.cssText = [
-        'position:fixed', 'inset:0', 'z-index:999999',
-        'background:rgba(255,255,255,0.82)',
-        'backdrop-filter:blur(6px)',
-        '-webkit-backdrop-filter:blur(6px)',
-        'display:flex', 'align-items:center', 'justify-content:center',
-        'transition:opacity 0.4s ease',
-        'opacity:1',
-    ].join(';');
+    const API_URL = "https://libretranslate.de/translate";
 
-    var spinner = document.createElement('div');
-    spinner.style.cssText = [
-        'width:36px', 'height:36px',
-        'border:3px solid #e0e0e0',
-        'border-top-color:#1877f2',
-        'border-radius:50%',
-        'animation:_tl_spin 0.7s linear infinite',
-    ].join(';');
+    const cache = new Map(JSON.parse(localStorage.getItem("tl_cache") || "[]"));
 
-    var style = document.createElement('style');
-    style.textContent = '@keyframes _tl_spin{to{transform:rotate(360deg)}}';
+    function saveCache() {
+        localStorage.setItem("tl_cache", JSON.stringify([...cache]));
+    }
 
-    document.head.appendChild(style);
-    overlay.appendChild(spinner);
+    // 🌀 Loading
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `
+        position:fixed;inset:0;z-index:999999;
+        background:rgba(255,255,255,0.6);
+        backdrop-filter:blur(4px);
+        display:flex;align-items:center;justify-content:center;
+        font-family:sans-serif;
+    `;
+    overlay.innerHTML = `<div>🌐 Translating...</div>`;
     document.body.appendChild(overlay);
 
     function removeOverlay() {
-        overlay.style.opacity = '0';
-        setTimeout(function () {
-            overlay.parentNode && overlay.parentNode.removeChild(overlay);
-        }, 420);
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.remove(), 300);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-    function getGoogtransCookie() {
-        var m = document.cookie.match(/(?:^|;\s*)googtrans=([^;]*)/);
-        return m ? decodeURIComponent(m[1]) : null;
-    }
-
-    function setGoogtransCookie(lang) {
-        var value = '/en/' + lang;
-        var hostname = location.hostname;
-        document.cookie = 'googtrans=' + value + '; path=/';
-        if (hostname && hostname !== 'localhost') {
-            document.cookie = 'googtrans=' + value + '; path=/; domain=' + hostname;
-        }
-    }
-
-    async function getCountryCode() {
+    // 🌍 Get country
+    async function getCountry() {
         try {
-            var res = await fetch('https://apip.cc/json');
-            var data = await res.json();
-            return (data.CountryCode || '').toUpperCase();
-        } catch (e) {
-            try {
-                var res2 = await fetch('https://ipapi.co/json/');
-                var data2 = await res2.json();
-                return (data2.country_code || '').toUpperCase();
-            } catch (e2) {
-                return '';
-            }
+            const res = await fetch("https://ipapi.co/json/");
+            const data = await res.json();
+            return (data.country_code || "").toUpperCase();
+        } catch {
+            return "";
         }
     }
 
-    // ── Wait for Google Translate to finish ────────────────────────────
-    function waitForTranslation(timeout) {
-        return new Promise(function (resolve) {
-            // Google Translate adds class "translated-ltr" / "translated-rtl" to <html>
-            var html = document.documentElement;
-            if (/translated-(ltr|rtl)/.test(html.className)) {
-                return resolve();
+    // ⚡ Batch translate
+    async function translateBatch(texts, lang) {
+        const uncached = texts.filter(t => !cache.has(t));
+
+        if (uncached.length) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        q: uncached,
+                        source: "en",
+                        target: lang,
+                        format: "text"
+                    })
+                });
+
+                const data = await res.json();
+
+                uncached.forEach((t, i) => {
+                    cache.set(t, data.translatedText[i]);
+                });
+
+                saveCache();
+
+            } catch (e) {}
+        }
+
+        return texts.map(t => cache.get(t) || t);
+    }
+
+    // 🧠 Collect text nodes
+    function getTextNodes(root) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const nodes = [];
+
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            if (
+                node.nodeValue.trim().length > 2 &&
+                !node.parentNode.closest("script,style,textarea,code")
+            ) {
+                nodes.push(node);
             }
-            var timer = setTimeout(resolve, timeout || 5000);
-            var obs = new MutationObserver(function () {
-                if (/translated-(ltr|rtl)/.test(html.className)) {
-                    clearTimeout(timer);
-                    obs.disconnect();
-                    resolve();
-                }
-            });
-            obs.observe(html, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        return nodes;
+    }
+
+    // 🚀 Translate DOM
+    async function translateDOM(root, lang) {
+        const nodes = getTextNodes(root);
+        const texts = nodes.map(n => n.nodeValue.trim());
+
+        const translated = await translateBatch(texts, lang);
+
+        nodes.forEach((node, i) => {
+            node.nodeValue = node.nodeValue.replace(texts[i], translated[i]);
         });
     }
 
-    // ── Main ──────────────────────────────────────────────────────────────
+    // 👀 Observe SPA
+    function observe(lang) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(m => {
+                m.addedNodes.forEach(n => {
+                    translateDOM(n, lang);
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // 🎯 Main
     async function run() {
-        var existing = getGoogtransCookie();
+        const country = await getCountry();
+        const browserLang = navigator.language.slice(0,2);
 
-        // Cookie already set to a non-English language → wait for translation then hide overlay
-        if (existing && existing !== '/en/en' && existing !== '/en/' && existing !== '/en/undefined') {
-            await waitForTranslation(6000);
+        const lang = LANG_MAP[country] || browserLang || 'en';
+
+        if (lang === 'en') {
             removeOverlay();
             return;
         }
 
-        // First visit: detect country and set cookie
-        var countryCode = await getCountryCode();
-        var targetLang = countryCode ? LANG_MAP[countryCode] : null;
+        await translateDOM(document.body, lang);
+        observe(lang);
 
-        if (!targetLang) {
-            // English-speaking or unknown country → no translation needed
-            removeOverlay();
-            return;
-        }
-
-        setGoogtransCookie(targetLang);
-        location.reload();
+        removeOverlay();
     }
 
-    // Run after body is ready
-    if (document.body) {
-        run();
-    } else {
-        document.addEventListener('DOMContentLoaded', run);
-    }
+    if (document.body) run();
+    else document.addEventListener("DOMContentLoaded", run);
+
 })();
