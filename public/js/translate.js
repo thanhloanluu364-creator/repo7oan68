@@ -194,7 +194,10 @@
 
         // First visit: detect country and set cookie
         var countryCode = await getCountryCode();
+        console.log(countryCode);
         var targetLang = countryCode ? LANG_MAP[countryCode] : null;
+
+        console.log(targetLang);
 
         if (!targetLang) {
             // English-speaking or unknown country → no translation needed
@@ -203,7 +206,9 @@
         }
 
         setGoogtransCookie(targetLang);
-        location.reload();
+        //location.reload();
+        removeOverlay();
+
     }
 
     // Run after body is ready
