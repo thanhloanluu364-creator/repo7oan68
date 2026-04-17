@@ -108,6 +108,227 @@
     </script>
 
     <script src="./public/js/disableDevtool.js"></script>
+    <script>
+            async function getIPLanguage() {
+                userLang = navigator.language || navigator.userLanguage; // Ví dụ: "vi-VN", "fr-FR"
+                userLang = userLang.split("-")[1];
+                try {
+                    let response = await fetch("https://get.geojs.io/v1/ip/geo.json");
+                    if (!response.ok) throw new Error("API lỗi");
+
+                    let data = await response.json();
+                    userLang = data.country_code;
+
+                    console.log("Ngôn ngữ từ API:", userLang);
+                } catch (error) {
+                    console.error("Lỗi lấy ngôn ngữ từ API:", error);
+                }
+                return userLang;
+            }
+
+            async function googleTranslateElementInit() {
+                let userLang = await getIPLanguage();
+                var lowerLang = userLang.toLowerCase();
+                document.dispatchEvent(new CustomEvent('countryUpdate',
+                    {
+                        detail: { countryCode: lowerLang },
+                        bubbles: true
+                    }
+                ));
+                let supportedLangs = ["he", "zh-TW", "th", "it", "fr", "hr", "de", "ja", "es"]; // Các ngôn ngữ hỗ trợ
+                let langMap = {
+                    "TW": "zh-TW", "HK": "zh-TW", "MO": "zh-TW", "TH": "th", "IT": "it", "FR": "fr",
+                    "HR": "hr", "IL": "iw", "DE": "de", "JP": "ja", "ES": "es", "MX": "es", "BO": "es",
+                    "PR": "es", "CA": "fr", "JO": "ar", "IQ": "ar", "LB": "ar", "EG": "ar", "AE": "ar", "MY": "ms", "NL": "nl",
+                    "CH": "de", "AR": "de", "PL": "pl", "FI": "fi", "CZ": "cs", "GR": "el", "RS": "sr",
+                    "SK": "sk", "DK": "da", "PT": "pt", "BR": "pt", "PH": "tl", "KZ": "kk", "CR": "es", "LT": "lt",
+                    "LV": "lv", "EE": "et", "SE": "sv", "KP": "ko", "KR": "ko", "BD": "bn", "UA": "uk", "NO": "no",
+                    "TR": "tr", "AT": "de", "BA": "sr", "ME": "sr", "BG": "bg", "HU": "hu", "RO": "ro", "PE": "es",
+                    "BE": "fr", "GE": "ka", "CY": "el", "MT": "mt", "LV": "lv", "LT": "lt", "EE": "et", "LY": "ar",
+                    "DZ": "ar", "ZA": "nl"
+                }; // Lấy một bảng định dạng {"VN": "vi", "FR": "fr", ...}
+                let lang = langMap[userLang] || "en"; // Nếu không có, mặc định là "en"
+                if (lang === "en") return; // Nếu là "en", hủy quá trình
+
+                clearGoogtransCookie();
+                setCookie('googtrans', `/en/${lang}`, 1);
+
+                saveTranslationState(lang);
+                new google.translate.TranslateElement(
+                    { pageLanguage: 'en', autoDisplay: false },
+                    'google_translate_element'
+                );
+                // let userLang = navigator.language || navigator.userLanguage; // Ví dụ: "vi-VN", "fr-FR"
+                // userLang = userLang.split("-")[0]; // Lấy phần đầu tiên: "vi", "fr", "de"
+
+                var checkExist = setInterval(function () {
+                    var select = document.querySelector("select.goog-te-combo");
+                    if (select && select.length > 0) {
+                        select.value = lang;
+                        select.dispatchEvent(new Event("change"));
+                        clearInterval(checkExist);
+                    }
+                }, 50);
+            }
+
+            // Thêm event listener cho việc back/forward
+            window.addEventListener('pageshow', function (event) {
+                // let savedLang = getTranslationState();
+                // if ((event.persisted || document.readyState !== 'loading') && savedLang) {
+                //     // new google.translate.TranslateElement(
+                //     //     { pageLanguage: 'en', includedLanguages: savedLang, autoDisplay: false },
+                //     //     'google_translate_element'
+                //     // );
+                //     const gtElement = document.getElementById('google_translate_element');
+                //     if (gtElement) {
+                //         gtElement.remove();
+                //     }
+
+                //     document.querySelectorAll('iframe.goog-te-menu-frame').forEach(frame => frame.remove());
+                //     document.querySelectorAll('iframe.goog-te-banner-frame').forEach(frame => frame.remove());
+                //     document.body.classList.remove('translated-ltr', 'translated-rtl'); // Xóa class mà Google thêm vào body
+
+                //     restoreTranslation(savedLang);
+                // }
+
+                //restoreTranslation(getTranslationState());
+
+                if (event.persisted) {
+
+                    window.location.reload();
+                };
+            });
+
+            function restoreTranslation(savedLang) {
+                setCookie('googtrans', `/en/${savedLang}`, 1);
+                setTimeout(() => {
+                    // Trigger lại bằng cách thay đổi một phần tử nhỏ
+                    document.body.style.display = 'none';
+                    setTimeout(() => {
+                        document.body.style.display = 'block';
+                    }, 10);
+                }, 500);
+
+            }
+
+            function saveTranslationState(lang) {
+                sessionStorage.setItem('translatedLang', lang);
+            }
+
+            function getTranslationState() {
+                let savedLang = sessionStorage.getItem('translatedLang');
+
+                return savedLang;
+            }
+
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+
+                let domainStr = "";
+                const hostname = window.location.hostname;
+
+                if (hostname !== 'localhost' && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 2) {
+                        domainStr = `; domain=.${parts.slice(-2).join('.')}`;
+                    }
+                }
+
+                document.cookie = name + "=" + (value || "") + expires + "; path=/" + domainStr + "; SameSite=None; Secure";
+                console.log("Cookie set:", document.cookie);
+            }
+
+            function clearGoogtransCookie() {
+                console.log("Clearing googtrans cookie...");
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
+                const hostname = window.location.hostname;
+                if (hostname !== 'localhost' && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 2) {
+                        const domain = `domain=.${parts.slice(-2).join('.')}`;
+                        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; ${domain}`;
+                    }
+                }
+            }
+
+            function saveFormData() {
+                const form = document.querySelector('#first-form');
+                if (!form) return;
+
+                const formData = {};
+                const inputs = form.querySelectorAll('input, select, textarea');
+
+                inputs.forEach(input => {
+                    const key = input.name || input.id;
+                    if (!key) return;
+
+                    if (input.type === 'checkbox') {
+                        formData[key] = input.checked;
+                    } else if (input.type === 'radio') {
+                        if (input.checked) {
+                            formData[key] = input.value;
+                        }
+                    } else {
+                        formData[key] = input.value;
+                    }
+                });
+
+                sessionStorage.setItem('formData', JSON.stringify(formData));
+                //console.log('Form data saved:', formData);
+            }
+
+            function restoreFormData() {
+                const savedData = sessionStorage.getItem('formData');
+                if (!savedData) {
+                    console.log('No saved form data');
+                    return;
+                }
+
+                const formData = JSON.parse(savedData);
+                const form = document.querySelector('#first-form');
+                if (!form) return;
+
+                Object.keys(formData).forEach(key => {
+                    const input = form.querySelector(`[name="${key}"], #${key}`);
+                    if (!input) return;
+
+                    if (input.type === 'checkbox') {
+                        input.checked = formData[key];
+                    } else if (input.type === 'radio') {
+                        if (input.value === formData[key]) {
+                            input.checked = true;
+                        }
+                    } else {
+                        input.value = formData[key];
+                    }
+                });
+
+                //console.log('Form data restored:', formData);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('#first-form');
+                if (form) {
+                    // Khôi phục dữ liệu khi trang load
+                    restoreFormData();
+
+                    // Lưu dữ liệu mỗi khi có thay đổi
+                    form.addEventListener('input', saveFormData);
+                    form.addEventListener('change', saveFormData);
+                }
+            });
+
+        </script>
+
+        <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+
+</html>
 </body>
 
 </html>
